@@ -53,6 +53,8 @@ export async function nppesSearch(q: NppesQuery, opts: HttpOptions = {}): Promis
 }
 
 export const locationAddress = (r: NppesResult): NppesAddress | null => r.addresses.find((a) => a.address_purpose === "LOCATION") ?? null;
+/** Every practice address: the primary LOCATION plus secondary practice locations. */
+export const practiceAddresses = (r: NppesResult): NppesAddress[] => [...r.addresses.filter((a) => a.address_purpose === "LOCATION"), ...(r.practiceLocations ?? [])];
 export const primaryTaxonomy = (r: NppesResult): NppesTaxonomy | null => r.taxonomies.find((t) => t.primary) ?? r.taxonomies[0] ?? null;
 export const taxonomyCodes = (r: NppesResult): string[] => r.taxonomies.map((t) => t.code);
 export const zip5 = (z: string | undefined | null): string => (z ?? "").replace(/[^0-9]/g, "").slice(0, 5);
@@ -62,8 +64,7 @@ export async function npisWithTaxonomyInZip(taxonomyDescription: string, codes: 
   const { results, url, ms } = await nppesSearch({ taxonomy_description: taxonomyDescription, postal_code: zip, address_purpose: "LOCATION", enumeration_type: "NPI-1" }, opts);
   const npis = new Set<string>();
   for (const r of results) {
-    const loc = locationAddress(r);
-    if (zip5(loc?.postal_code) !== zip) continue;
+    if (!practiceAddresses(r).some((a) => zip5(a.postal_code) === zip)) continue;
     if (codes.length && !r.taxonomies.some((t) => codes.includes(t.code))) continue;
     npis.add(r.number);
   }

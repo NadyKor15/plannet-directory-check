@@ -6,7 +6,7 @@ import { DIRECTORIES, NOT_OPEN, type DirectoryInfo } from "./directories.ts";
 import { FhirClient, FhirError, type FhirResource } from "./fhir.ts";
 import { agePolicyPublished, hasHours, hoursConflict, newPatientsOf } from "./plannet.ts";
 import { rolesInZip, type NormalizedRole } from "./records.ts";
-import { locationAddress, nppesSearch, zip5 } from "./nppes.ts";
+import { nppesSearch, practiceAddresses, zip5 } from "./nppes.ts";
 import { matchesGroup, groupOfText, SPECIALTY_GROUPS, type SpecialtyKey } from "./specialties.ts";
 import { FL_QHP_INDEXES_PY2026 } from "./qhp-index-fl.ts";
 
@@ -194,7 +194,8 @@ async function auditNppes(opts: AuditOptions): Promise<AuditResult["nppes"]> {
     const term = SPECIALTY_GROUPS[s].nppesTerm;
     try {
       const any = await nppesSearch({ taxonomy_description: term, postal_code: zip, enumeration_type: "NPI-1" }, { counters, timeoutMs: opts.timeoutMs ?? 20_000, fetchImpl: opts.fetchImpl });
-      const elsewhere = any.results.filter((r) => zip5(locationAddress(r)?.postal_code) !== zip).length;
+      // "Practices elsewhere": none of its practice addresses (primary LOCATION or secondary practice locations) is in the ZIP.
+      const elsewhere = any.results.filter((r) => !practiceAddresses(r).some((a) => zip5(a.postal_code) === zip)).length;
       const loc = await nppesSearch({ taxonomy_description: term, postal_code: zip, enumeration_type: "NPI-1", address_purpose: "LOCATION" }, { counters, timeoutMs: opts.timeoutMs ?? 20_000, fetchImpl: opts.fetchImpl });
       rows.push({ zip, specialty: s, any_address: any.results.length, location_elsewhere: elsewhere, location_only: loc.results.length, url: any.url });
     } catch (err) {
