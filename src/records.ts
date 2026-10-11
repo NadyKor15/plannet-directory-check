@@ -40,6 +40,8 @@ export type ZipQuery = {
   maxPages?: number;
   maxLocations?: number;
   keepRaw?: boolean;
+  /** Per-location strategy: stop starting new location requests after this many ms (result is then truncated). */
+  deadlineMs?: number;
 };
 
 export type ZipResult = {
@@ -50,6 +52,9 @@ export type ZipResult = {
   ref: string;
   /** Requests that failed inside this query (the sweep continues past them). */
   failures: string[];
+  /** Per-location strategy: how many locations were actually asked (less than locationsSeen when a deadline hit). */
+  locationsAsked?: number;
+  deadlineHit?: boolean;
 };
 
 const NUCC = /^\d{3}[0-9A-Z]{6}X$/;
@@ -138,7 +143,11 @@ export async function rolesInZip(dir: DirectoryInfo, client: FhirClient, q: ZipQ
   if (locRes.pageError) failures.push(locRes.pageError);
   const locations = locRes.matches.filter((l) => l.resourceType === "Location" && (addressOf(l)?.zip ?? q.zip) === q.zip).slice(0, q.maxLocations ?? 400);
   let truncated = locRes.truncated || locRes.matches.length > (q.maxLocations ?? 400);
+  let asked = 0;
+  let deadlineHit = false;
   for (const loc of locations) {
+    if (q.deadlineMs !== undefined && performance.now() - t0 > q.deadlineMs) { deadlineHit = true; truncated = true; break; }
+    asked++;
     if (dir.pauseMs) await sleep(dir.pauseMs);
     const params: Record<string, string> = { location: dir.bareIds ? String(loc.id) : `Location/${loc.id}`, _count: String(pageSize), ...(q.network ? { network: q.network } : {}) };
     try {
@@ -150,5 +159,5 @@ export async function rolesInZip(dir: DirectoryInfo, client: FhirClient, q: ZipQ
       failures.push(err instanceof FhirError ? `${err.kind}${err.status ? ` ${err.status}` : ""}: ${err.url}` : String(err));
     }
   }
-  return { roles: [...roles.values()], locationsSeen: locations.length, truncated, ms: Math.round(performance.now() - t0), ref: locRes.ref, failures };
+  return { roles: [...roles.values()], locationsSeen: locations.length, truncated, ms: Math.round(performance.now() - t0), ref: locRes.ref, failures, locationsAsked: asked, deadlineHit };
 }
