@@ -1,0 +1,33 @@
+{
+  "name": "plannet-directory-check",
+  "version": "0.1.0",
+  "description": "Read-only client and audit for public FHIR Plan-Net provider directories (CMS-9115-F), NPPES and marketplace (QHP) provider files: which ZIP has which in-network practitioners, and what the records leave out (patient age, hours, new-patient status).",
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "node": ">=24"
+  },
+  "bin": {
+    "audit-directories": "bin/audit-directories.ts"
+  },
+  "scripts": {
+    "test": "node --test test/",
+    "audit": "node bin/audit-directories.ts"
+  },
+  "files": [
+    "bin",
+    "src",
+    "test",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "fhir",
+    "plan-net",
+    "provider-directory",
+    "nppes",
+    "cms",
+    "interoperability",
+    "health-insurance"
+  ]
+}

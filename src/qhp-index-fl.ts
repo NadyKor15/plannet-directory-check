@@ -1,0 +1,31 @@
+// Marketplace issuers' machine-readable index URLs for Florida, plan year 2026, from the CMS Machine-readable URL PUF
+// (https://download.cms.gov/marketplace-puf/2026/machine-readable-url-puf.zip, read 2026-10-11; 26 Florida rows).
+// Contact e-mails in the PUF are deliberately not copied. Dental-only issuers are kept: the audit reports them as such.
+export const FL_QHP_INDEXES_PY2026: { issuerId: string; url: string }[] = [
+  { issuerId: "13887", url: "https://22healthplan.com/machine-readable-files/cms-data-index.json" },
+  { issuerId: "15833", url: "https://dentalexchange.guardiandirect.com/secure/json/index.json" },
+  { issuerId: "15980", url: "https://apis.humana.com/v1/cms/index.json" },
+  { issuerId: "16842", url: "https://www.bcbsfl.com/DocumentLibrary/Providers/cms/index.json" },
+  { issuerId: "17121", url: "https://json.bestlife.com/cms/cms-data-index.json" },
+  { issuerId: "19898", url: "https://shc-p-001.sitecorecontenthub.cloud/api/public/content/indexfile.json" },
+  { issuerId: "21525", url: "https://d3ul0st9g52g6o.cloudfront.net/ffm/cms-data-index.json" },
+  { issuerId: "30115", url: "https://fl-d4h.dentaltotalhealth.com/healthcare-data/FL/cms-data-index.json" },
+  { issuerId: "30252", url: "https://www.bcbsfl.com/DocumentLibrary/Providers/cms/index.json" },
+  { issuerId: "36194", url: "https://apps.hf.org/applications/dn/cms_json/index.json" },
+  { issuerId: "43274", url: "https://api.solsticebenefits.com/v1/Providers/Cms/GetIndex.json" },
+  { issuerId: "44228", url: "https://www22.elevancehealth.com/cms-data-index-json/Elevance-Health-Data-Index.json" },
+  { issuerId: "48121", url: "https://www.cigna.com/sites/json/cms-data-index.json" },
+  { issuerId: "48129", url: "https://cmsdata.providers4you.com/cms-data-index.json" },
+  { issuerId: "49004", url: "https://api.centene.com/ambetter/reference/cms-data-index.json" },
+  { issuerId: "54172", url: "https://www.molinahealthcare.com/cms/json/index.json" },
+  { issuerId: "56503", url: "https://www.fhcp.com/xml/cms-data-index.json" },
+  { issuerId: "59667", url: "https://dentaquest.com/getattachment/Marketplace/CMSDataIndex/cms-data-index.json" },
+  { issuerId: "66966", url: "https://capitalhealth.com/cms-data-index.json" },
+  { issuerId: "67926", url: "https://www.amerihealthcaritasnext.com/cms-data-index.json" },
+  { issuerId: "68398", url: "https://www.uhc.com/content/dam/uhcdotcom/en/general/cms-data-index.json" },
+  { issuerId: "74243", url: "https://www.dominionnational.com/Resources/dominion/index.json" },
+  { issuerId: "79850", url: "https://www.cigna.com/sites/json/cms-data-index.json" },
+  { issuerId: "86382", url: "https://api.centene.com/ambetter/reference/cms-data-index.json" },
+  { issuerId: "97725", url: "https://cms.deltadental.com/index.json" },
+  { issuerId: "98869", url: "https://emihealth.com/Services/providerdata/cms-data-index.json" },
+];

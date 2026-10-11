@@ -55,6 +55,8 @@ export type ZipResult = {
   /** Per-location strategy: how many locations were actually asked (less than locationsSeen when a deadline hit). */
   locationsAsked?: number;
   deadlineHit?: boolean;
+  /** Location resources seen (for record-level metrics). */
+  locations?: FhirResource[];
 };
 
 const NUCC = /^\d{3}[0-9A-Z]{6}X$/;
@@ -136,7 +138,21 @@ export async function rolesInZip(dir: DirectoryInfo, client: FhirClient, q: ZipQ
       const prac = (() => { const ref = (r as { practitioner?: { reference?: string } }).practitioner?.reference; return ref ? res.included.get(ref) ?? null : null; })();
       roles.set(`PractitionerRole/${r.id}`, normalizeRole(dir.key, r, inZip, prac, q.keepRaw));
     }
-    return { roles: [...roles.values()], locationsSeen: [...res.included.keys()].filter((k) => k.startsWith("Location/")).length, truncated: res.truncated, ms: Math.round(performance.now() - t0), ref: res.ref, failures };
+    const inc = [...res.included.values()].filter((x) => x.resourceType === "Location");
+    return { roles: [...roles.values()], locationsSeen: inc.length, truncated: res.truncated, ms: Math.round(performance.now() - t0), ref: res.ref, failures, locations: inc };
+  }
+  if (dir.strategy === "revinclude") {
+    // Location?address-postalcode=Z&_revinclude=PractitionerRole:location — for servers whose role->location
+    // references are absolute URLs, so PractitionerRole?location=<id> finds nothing.
+    const res = await client.search("Location", { "address-postalcode": q.zip, _revinclude: "PractitionerRole:location", _count: String(pageSize) }, dir.maxLocationPages ?? 5);
+    if (res.pageError) failures.push(res.pageError);
+    const locs = new Map(res.matches.filter((l) => l.resourceType === "Location").map((l) => [String(l.id), l]));
+    for (const r of res.included.values()) {
+      if (r.resourceType !== "PractitionerRole") continue;
+      const loc = referenceList(r, "location").map((ref) => locs.get(ref.replace(/^.*\/Location\//, "").replace(/^Location\//, ""))).find(Boolean) ?? null;
+      roles.set(`PractitionerRole/${r.id}`, normalizeRole(dir.key, r, loc, null, q.keepRaw));
+    }
+    return { roles: [...roles.values()], locationsSeen: locs.size, truncated: res.truncated, ms: Math.round(performance.now() - t0), ref: res.ref, failures, locations: [...locs.values()] };
   }
   // per-location
   const locRes = await client.search("Location", { "address-postalcode": q.zip, _count: String(pageSize) }, dir.maxLocationPages ?? 5);
@@ -159,5 +175,5 @@ export async function rolesInZip(dir: DirectoryInfo, client: FhirClient, q: ZipQ
       failures.push(err instanceof FhirError ? `${err.kind}${err.status ? ` ${err.status}` : ""}: ${err.url}` : String(err));
     }
   }
-  return { roles: [...roles.values()], locationsSeen: locations.length, truncated, ms: Math.round(performance.now() - t0), ref: locRes.ref, failures, locationsAsked: asked, deadlineHit };
+  return { roles: [...roles.values()], locationsSeen: locations.length, truncated, ms: Math.round(performance.now() - t0), ref: locRes.ref, failures, locationsAsked: asked, deadlineHit, locations: locations.slice(0, asked) };
 }
