@@ -131,9 +131,11 @@ export function matchesGroup(key: SpecialtyKey, codes: string[], texts: string[]
   return up.some((t) => own.some((d) => t === d || t.startsWith(d)));
 }
 
-/** Group of a free-text specialty ("Allergist", "Orthopedic Surgeon specializing in Pediatrics"). Dentists never match. */
+/** Group of a free-text specialty ("Allergist", "Orthopedic Surgeon specializing in Pediatrics"). Dentists never match,
+ *  nor do allied-health roles named after a field ("Orthopedic Physical Therapist", Molina 2026-10-13): not a physician. */
 export function groupOfText(text: string): SpecialtyKey | null {
   if (/dent(ist|al)/i.test(text)) return null;
+  if (/\b(therapist|therapy|assistant|technician|technologist|orthotist|prosthetist)\b/i.test(text)) return null;
   for (const [k, g] of Object.entries(SPECIALTY_GROUPS) as [SpecialtyKey, SpecialtyGroup][]) if (g.textPattern.test(text)) return k;
   return null;
 }
