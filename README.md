@@ -11,7 +11,6 @@ is an anonymous GET; every sweep prints its error count next to its findings.
 ## Try it
 
 ```sh
-cd packages/plannet-directory-check
 npm test                                              # offline tests, no network
 node bin/audit-directories.ts --zips 32803 --no-qhp   # live audit, one ZIP (about a minute)
 node bin/audit-directories.ts                          # 6 directories × 3 Orlando ZIPs × 6 specialties

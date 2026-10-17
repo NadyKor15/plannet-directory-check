@@ -4,6 +4,7 @@
   "description": "Read-only client and audit for public FHIR Plan-Net provider directories (CMS-9115-F), NPPES and marketplace (QHP) provider files: which ZIP has which in-network practitioners, and what the records leave out (patient age, hours, new-patient status).",
   "type": "module",
   "license": "MIT",
+  "author": "Nadezhda Korchagina (https://github.com/NadyKor15)",
   "engines": {
     "node": ">=24"
   },
